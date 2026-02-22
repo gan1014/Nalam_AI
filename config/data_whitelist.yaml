@@ -1,0 +1,59 @@
+# NalamAI Data Whitelist (Tamil Nadu Health Dept Approval)
+# ONLY datasets listed here are allowed to be processed.
+
+approved_sources:
+  - source_name: TN_HEALTH_DHS
+    type: government
+    url: "https://tnhis.tn.gov.in/stats"
+    format: csv
+    validation: schema_match
+    approval_status: allowed
+    description: "Official TN Directorate of Health Services weekly counts"
+
+  - source_name: IMD_TN_WEATHER
+    type: institutional
+    url: "https://mausam.imd.gov.in/chennai"
+    format: api
+    validation: range_check
+    approval_status: allowed
+    description: "IMD Tamil Nadu Regional weather indicators"
+
+  - source_name: TN_GEO_JSON
+    type: institutional
+    url: "local_trusted_file"
+    format: geojson
+    validation: topology_check
+    approval_status: allowed
+    description: "Standardized TN District/Block boundaries"
+
+  - source_name: TN_CENSUS_2011
+    type: government
+    url: "https://censusindia.gov.in"
+    format: xlsx
+    validation: checksum
+    approval_status: allowed
+    description: "Population reference data for TN"
+
+  - source_name: CHENNAI_WARD_GIS
+    type: government
+    url: "https://data.opencity.in/dataset/gcc-ward-information"
+    format: geojson
+    validation: layer_count_match
+    approval_status: allowed
+    description: "Greater Chennai Corporation Ward Boundaries (2022)"
+
+  - source_name: GCC_HEALTH_FACILITIES
+    type: government
+    url: "https://chennaicorporation.gov.in/gcc/department/health/"
+    format: csv
+    validation: coord_range_check
+    approval_status: allowed
+    description: "List of UPHCs and UCHCs in Chennai"
+
+  - source_name: CHENNAI_INFRA_RISK
+    type: institutional
+    url: "local_verified_maps"
+    format: kml
+    validation: spatial_overlap_check
+    approval_status: allowed
+    description: "Waterlogging and drainage network maps for Chennai"

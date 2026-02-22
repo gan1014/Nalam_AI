@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NalamAI Health Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Noto+Sans+Tamil:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy-dark:  #0A1628;
+            --navy-mid:   #0D1F35;
+            --navy-light: #0A1E32;
+            --teal:       #0D9488;
+            --teal-light: #14B8A6;
+            --teal-pale:  #CCFBF1;
+            --border:     #1E3A5F;
+            --text-main:  #CBD5E1;
+            --text-muted: #94A3B8;
+            --white:      #FFFFFF;
+            --red:        #EF4444;
+            --green:      #22C55E;
+            --orange:     #F97316;
+            --blue:       #3B82F6;
+            --purple:     #8B5CF6;
+            --gold:       #F59E0B;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background-color: var(--navy-dark);
+            font-family: 'DM Sans', 'Noto Sans Tamil', sans-serif;
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 720px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: var(--navy-dark);
+        }
+
+        /* SECTION A — HEADER */
+        .header {
+            background: linear-gradient(135deg, #0D9488, #065F46);
+            border-radius: 16px 16px 0 0;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-icon {
+            background: rgba(255,255,255,0.15);
+            border-radius: 50%;
+            width: 46px;
+            height: 46px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .header-title-box { }
+        .header-title { color: white; font-weight: bold; font-size: 17px; }
+        .header-subtitle { color: #CCFBF1; font-size: 11px; font-family: 'Noto Sans Tamil', sans-serif; }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            background: rgba(255,255,255,0.15);
+            border-radius: 20px;
+            padding: 4px 12px;
+            gap: 6px;
+        }
+
+        .online-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4ADE80;
+            animation: pulse 2s infinite;
+        }
+
+        .online-text { color: white; font-size: 11px; }
+
+        /* SECTION B — TOOLBAR */
+        .toolbar {
+            background: var(--navy-light);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .lang-label { color: var(--text-muted); font-size: 11px; }
+        .lang-pill {
+            background: var(--navy-dark);
+            border-radius: 20px;
+            padding: 3px;
+            display: flex;
+            gap: 2px;
+        }
+
+        .lang-btn {
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            border-radius: 16px;
+            padding: 3px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .lang-btn.active {
+            background: var(--teal);
+            color: white;
+        }
+
+        .voice-btn {
+            border: 1px solid var(--border);
+            background: var(--navy-dark);
+            color: var(--text-muted);
+            border-radius: 20px;
+            padding: 5px 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .voice-btn:hover { border-color: var(--teal); color: var(--teal); }
+        .voice-btn.listening {
+            background: var(--red);
+            border-color: var(--red);
+            color: white;
+            animation: voicePulse 1s infinite;
+        }
+
+        .voice-status { color: #4B7A9A; font-size: 11px; margin-left: auto; }
+
+        /* SECTION C — DISEASE TAG BAR */
+        .disease-tags {
+            background: #0D1626;
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            padding: 8px 14px;
+            display: flex;
+            gap: 7px;
+            flex-wrap: wrap;
+        }
+
+        /* SECTION D — MESSAGES AREA */
+        .messages {
+            id: messages;
+            background: var(--navy-dark);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            padding: 16px;
+            overflow-y: auto;
+            height: 380px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            flex: 1;
+        }
+
+        .msg-row { display: flex; align-items: flex-start; gap: 10px; }
+        .msg-row.user { flex-direction: row-reverse; }
+
+        .msg-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .msg-avatar.bot { background: linear-gradient(135deg,#0D9488,#065F46); border: 2px solid #0D9488; }
+        .msg-avatar.user { background: #1E3A5F; }
+
+        .msg-bubble {
+            max-width: 78%;
+            padding: 11px 15px;
+            font-size: 13.5px;
+            line-height: 1.65;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .msg-bubble.bot {
+            background: var(--navy-mid);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            border-radius: 16px 16px 16px 4px;
+        }
+
+        .msg-bubble.user {
+            background: linear-gradient(135deg,#0D9488,#0F766E);
+            color: white;
+            border-radius: 16px 16px 4px 16px;
+        }
+
+        .typing-row { display: flex; align-items: center; gap: 10px; }
+        .typing-dots {
+            display: flex;
+            gap: 5px;
+            padding: 14px 18px;
+            background: var(--navy-mid);
+            border: 1px solid var(--border);
+            border-radius: 16px 16px 16px 4px;
+        }
+
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); }
+        .dot:nth-child(1) { animation: bounce 1.2s 0s infinite; }
+        .dot:nth-child(2) { animation: bounce 1.2s 0.2s infinite; }
+        .dot:nth-child(3) { animation: bounce 1.2s 0.4s infinite; }
+
+        /* SECTION E — QUICK QUESTIONS BAR */
+        .quick-q {
+            background: #0D1626;
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            padding: 8px 12px;
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .quick-btn {
+            background: var(--navy-dark);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            border-radius: 20px;
+            padding: 4px 11px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-btn:hover { border-color: var(--teal); color: var(--teal); }
+
+        /* SECTION F — INPUT BAR */
+        .input-bar {
+            background: var(--navy-mid);
+            border-radius: 0 0 16px 16px;
+            border: 1px solid var(--border);
+            border-top: 1px solid var(--teal);
+            padding: 10px 14px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        .input-area {
+            flex: 1;
+            background: var(--navy-dark);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 9px 13px;
+            color: #E2E8F0;
+            font-size: 13.5px;
+            font-family: 'DM Sans', sans-serif;
+            resize: none;
+            outline: none;
+            line-height: 1.5;
+            min-height: 44px;
+        }
+
+        .input-area:focus { border-color: var(--teal); }
+
+        .send-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: none;
+            background: #1E3A5F;
+            cursor: not-allowed;
+            opacity: 0.5;
+            color: white;
+            font-size: 17px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .send-btn.enabled {
+            background: linear-gradient(135deg,#0D9488,#065F46);
+            cursor: pointer;
+            opacity: 1;
+        }
+
+        .send-btn.enabled:hover { transform: scale(1.08); }
+
+        /* SECTION G — DISCLAIMER */
+        .disclaimer {
+            text-align: center;
+            color: #4B7A9A;
+            font-size: 10.5px;
+            margin-top: 8px;
+            padding-bottom: 8px;
+        }
+
+        .ambulance-red { color: var(--red); font-weight: bold; }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: var(--navy-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-7px); } }
+        @keyframes voicePulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); } 50% { box-shadow: 0 0 0 10px rgba(239,68,68,0); } }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <!-- SECTION A — HEADER -->
+    <div class="header">
+        <div class="header-left">
+            <div class="header-icon">🏥</div>
+            <div class="header-title-box">
+                <div class="header-title">NalamAI Health Assistant</div>
+                <div class="header-subtitle">நலம் AI • Tamil Nadu Disease Guidance Bot</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="online-dot"></div>
+            <div class="online-text">Online</div>
+        </div>
+    </div>
+
+    <!-- SECTION B — TOOLBAR -->
+    <div class="toolbar">
+        <span class="lang-label">Language:</span>
+        <div class="lang-pill">
+            <button id="btn-en" class="lang-btn active" onclick="setLang('en')">English</button>
+            <button id="btn-ta" class="lang-btn" onclick="setLang('ta')">தமிழ்</button>
+        </div>
+        <button id="voiceBtn" class="voice-btn" onclick="toggleVoice()">
+            <span id="voiceIcon">🎤</span>
+            <span id="voiceLabel">Speak Symptoms</span>
+        </button>
+        <span id="voiceStatus" class="voice-status"></span>
+    </div>
+
+    <!-- SECTION C — DISEASE TAG BAR -->
+    <div id="diseaseTags" class="disease-tags"></div>
+
+    <!-- SECTION D — MESSAGES AREA -->
+    <div id="messages" class="messages"></div>
+
+    <!-- SECTION E — QUICK QUESTIONS BAR -->
+    <div id="quickQ" class="quick-q"></div>
+
+    <!-- SECTION F — INPUT BAR -->
+    <div class="input-bar">
+        <textarea id="inputArea" class="input-area" rows="2" placeholder="Describe symptoms or ask about dengue, malaria..." onkeydown="handleKey(event)" oninput="updateSendBtn()"></textarea>
+        <button id="sendBtn" class="send-btn" onclick="sendMessage()" disabled>➤</button>
+    </div>
+
+    <!-- SECTION G — DISCLAIMER -->
+    <div class="disclaimer">
+        ⚕️ General health guidance only — not medical diagnosis. Always consult a qualified doctor.<br>
+        🚨 Emergency? Call <span class="ambulance-red">108</span> (Tamil Nadu Ambulance — Free)
+    </div>
+</div>
+
+<script>
+    // PART 4 — JAVASCRIPT DATA
+    const DISEASE_DATA = {
+      dengue: {
+        en: {
+          keywords: ["dengue", "dengue fever", "high fever", "rash", "pain behind eyes", "joint pain", "mosquito bite", "platelet"],
+          response: `🦟 **DENGUE FEVER — Guidance**\n\n**Early Symptoms (காய்ச்சல் — Fever):**\n• Sudden high fever (104°F / 40°C)\n• Severe headache (தலைவலி) and pain behind the eyes\n• Intense joint and muscle pain (called "Breakbone fever")\n• Skin rash appearing 2-5 days after fever starts\n• Nausea, vomiting, fatigue\n• Mild bleeding from gums or nose\n\n**Home Care Precautions:**\n• Rest completely — do not go to school/work\n• Drink 3-4 litres of fluids daily: water, coconut water, ORS, fruit juice\n• Take Paracetamol ONLY for fever — NEVER take Aspirin or Ibuprofen (they can cause bleeding)\n• Apply cool wet cloth on forehead to bring down fever\n• Wear full-sleeve clothes to prevent more mosquito bites\n• Sleep under mosquito net always\n• Eat light food: porridge, rice kanji, soups\n\n**What Doctors Typically Prescribe (Early Stage):**\n• Paracetamol (Crocin / Dolo 650) for fever\n• Oral rehydration salts (ORS) for hydration\n• Blood tests: CBC test to check platelet count\n• Anti-emetics if vomiting is severe\n• Vitamin C supplements\n\n**DANGER SIGNS — Go to Hospital IMMEDIATELY:**\n🚨 Severe abdominal pain\n🚨 Continuous vomiting (more than 3 times)\n🚨 Blood in vomit, urine, or stool\n🚨 Platelet count below 100,000\n🚨 Difficulty breathing\n🚨 Sudden weakness or dizziness\n\n**Prevention for Your Family:**\n• Remove all stagnant water from flower pots, tyres, coolers\n• Use mosquito nets and repellents\n• Keep water tanks fully covered\n• Use mosquito coils/mats in evenings\n• Community fogging during outbreak season\n\n⚠️ Please consult a qualified doctor for proper diagnosis. This is general guidance only. Emergency: 108`
+        },
+        ta: {
+          keywords: ["டெங்கு", "காய்ச்சல்", "தலைவலி", "மூட்டு வலி", "கொசு", "ரணம்"],
+          response: `🦟 **டெங்கு காய்ச்சல் — வழிகாட்டல்**\n\n**ஆரம்ப அறிகுறிகள்:**\n• திடீர் அதிக காய்ச்சல் (40°C / 104°F)\n• கடுமையான தலைவலி மற்றும் கண்களுக்கு பின்னால் வலி\n• மூட்டு மற்றும் தசை வலி (மிகவும் கடுமையாக இருக்கும்)\n• 2-5 நாட்களில் சருமத்தில் சிவந்த படை\n• குமட்டல், வாந்தி, களைப்பு\n• ஈறு அல்லது மூக்கிலிருந்து சிறிது இரத்தம்\n\n**வீட்டு பராமரிப்பு முன்னெச்சரிக்கைகள்:**\n• முழு ஓய்வு எடுங்கள் — பள்ளி அல்லது வேலைக்கு செல்லாதீர்கள்\n• தினமும் 3-4 லிட்டர் திரவம் குடிக்கவும்: தண்ணீர், தேங்காய் தண்ணீர், ORS\n• காய்ச்சலுக்கு Paracetamol மட்டுமே எடுக்கவும் — Aspirin வேண்டாம்\n• காய்ச்சலை குறைக்க நெற்றியில் குளிர்ந்த துணி வையுங்கள்\n• மேலும் கொசு கடிக்காமல் இருக்க முழு கை உடை அணியுங்கள்\n• கொசு வலையில் தூங்குங்கள்\n• இலேசான உணவு சாப்பிடுங்கள்: கஞ்சி, சூப்\n\n**மருத்துவர்கள் பொதுவாக என்ன கொடுப்பார்கள்:**\n• Paracetamol (Crocin / Dolo 650) காய்ச்சலுக்கு\n• ORS நீர்ப்பூர்த்திக்கு\n• இரத்த பரிசோதனை: platelet எண்ணிக்கை சரிபார்க்க\n• வாந்தி அதிகமாக இருந்தால் Anti-emetics\n\n**உடனடியாக மருத்துவமனை செல்ல வேண்டிய அறிகுறிகள்:**\n🚨 கடுமையான வயிற்று வலி\n🚨 தொடர்ச்சியான வாந்தி (3 முறைக்கும் மேல்)\n🚨 வாந்தி, சிறுநீர் அல்லது மலத்தில் இரத்தம்\n🚨 Platelet 100,000-க்கும் கீழ் இறங்கினால்\n🚨 மூச்சு திணறல்\n\n**குடும்பத்தை பாதுகாக்க:**\n• தேங்கும் தண்ணீரை அகற்றுங்கள்\n• கொசு வலை, repellent பயன்படுத்துங்கள்\n• தண்ணீர் தொட்டிகளை மூடி வையுங்கள்\n\n⚠️ சரியான நோய் கண்டறிதலுக்கு மருத்துவரை அணுகவும். இது பொது வழிகாட்டல் மட்டுமே. அவசரநிலை: 108`
+        }
+      },
+      cholera: {
+        en: {
+          keywords: ["cholera", "watery diarrhea", "diarrhea", "loose motion", "vomiting", "dehydration", "rice water stool"],
+          response: `💧 **CHOLERA — Guidance**\n\n**Early Symptoms:**\n• Sudden profuse watery diarrhea (like "rice water")\n• Rapid vomiting\n• Severe dehydration — sunken eyes, dry mouth, no urination\n• Muscle cramps (especially in legs)\n• Low blood pressure, rapid heart rate\n• Usually NO fever (unlike dengue)\n\n**Home Care — Most Important: ORS**\n• Start Oral Rehydration Solution (ORS) IMMEDIATELY\n• Make ORS at home: 1 litre clean water + 6 teaspoons sugar + 1/2 teaspoon salt\n• Give small sips every 5 minutes continuously\n• Do NOT stop drinking even if vomiting — keep sipping slowly\n• Drink coconut water, rice water, banana stem juice\n• If baby has diarrhea: continue breastfeeding\n\n**What Doctors Typically Prescribe:**\n• ORS sachets (Electral / Jeevan Jal) — available free at PHCs\n• Oral Zinc tablets for children\n• Antibiotics: Doxycycline or Azithromycin (in severe cases)\n• IV fluids if severely dehydrated\n\n**DANGER SIGNS — Go to Hospital IMMEDIATELY:**\n🚨 No urination for 6+ hours\n🚨 Cannot keep any fluid down\n🚨 Sunken eyes, dry skin that stays pinched\n🚨 Rapid weak pulse\n🚨 Child becomes unconscious or very lethargic\n\n**Prevention:**\n• Drink only boiled or filtered water\n• Wash hands with soap before eating and after toilet\n• Eat freshly cooked hot food only\n• Avoid street food during outbreak\n• Boil drinking water for at least 1 minute\n\n⚠️ Please consult a qualified doctor. Emergency: 108`
+        },
+        ta: {
+          keywords: ["காலரா", "வயிற்றுப்போக்கு", "வாந்தி", "நீர்ப்போக்கு", "வயிறு"],
+          response: `💧 **காலரா — வழிகாட்டல்**\n\n**ஆரம்ப அறிகுறிகள்:**\n• திடீர் தண்ணீர் போன்ற வயிற்றுப்போக்கு ("அரிசி கழுவிய நீர்" போல)\n• வேகமான வாந்தி\n• கடுமையான நீரிழப்பு — உள்ளமிழ்ந்த கண்கள், வறண்ட வாய்\n• தசை பிடிப்பு (குறிப்பாக காலில்)\n• பொதுவாக காய்ச்சல் இருக்காது\n\n**வீட்டில் மிகவும் முக்கியம்: ORS**\n• உடனடியாக ORS கரைசல் தொடங்குங்கள்\n• வீட்டில் ORS: 1 லிட்டர் சுத்தமான நீர் + 6 தேக்கரண்டி சர்க்கரை + 1/2 தேக்கரண்டி உப்பு\n• ஒவ்வொரு 5 நிமிடத்திற்கும் சிறிய சிப் கொடுங்கள்\n• வாந்தி வந்தாலும் நிறுத்தாதீர்கள் — மெதுவாக தொடர்ந்து கொடுங்கள்\n• தேங்காய் தண்ணீர், அரிசி கழுவிய நீர் கொடுங்கள்\n\n**மருத்துவர்கள் பொதுவாக கொடுப்பார்கள்:**\n• ORS sachets (PHC-ல் இலவசமாக கிடைக்கும்)\n• குழந்தைகளுக்கு Zinc மாத்திரை\n• கடுமையான நிலையில்: Doxycycline, IV fluid\n\n**உடனே மருத்துவமனை செல்ல வேண்டியவை:**\n🚨 6 மணி நேரத்திற்கு மேல் சிறுநீர் வரவில்லை\n🚨 எதுவும் வயிற்றில் நிற்கவில்லை\n🚨 உள்ளமிழ்ந்த கண்கள், வறண்ட தோல்\n\n**தடுப்பு:**\n• கொதிக்க வைத்த அல்லது சுத்திகரித்த நீரை மட்டும் குடிக்கவும்\n• சாப்பிடும் முன்பும் கழிப்பறைக்கு பிறகும் கைகளை சாபன்னால் கழுவுங்கள்\n\n⚠️ மருத்துவரை அணுகவும். அவசரம்: 108`
+        }
+      },
+      leptospirosis: {
+        en: {
+          keywords: ["leptospirosis", "lepto", "flood fever", "rat fever", "mud fever", "flood", "yellow eyes", "jaundice after flood"],
+          response: `🌧️ **LEPTOSPIROSIS (Flood / Rat Fever) — Guidance**\n\n**Early Symptoms (appear 2-14 days after exposure):**\n• High fever with chills (காய்ச்சல்)\n• Severe headache and muscle pain (especially calf muscles)\n• Red eyes (conjunctivitis — bloodshot, watery)\n• Nausea, vomiting, stomach pain\n• Skin rash in some cases\n• Common after flooding or contact with muddy water\n\n**Home Care Precautions:**\n• Complete bed rest — very important\n• Take Paracetamol for fever — do NOT take Ibuprofen\n• Drink plenty of fluids: water, ORS, coconut water\n• Wear rubber slippers/boots if you must go in flood water\n• Keep wounds and cuts away from flood water\n• Wash hands thoroughly after any contact with soil or water\n\n**What Doctors Typically Prescribe:**\n• Doxycycline (100mg twice daily for 7 days) — antibiotic\n• Or Amoxicillin in mild cases\n• Blood tests: LFT, KFT (liver and kidney function)\n• Urine test\n• In severe cases: Penicillin G IV in hospital\n\n**DANGER SIGNS — Go to Hospital IMMEDIATELY:**\n🚨 Yellow eyes or yellow skin (jaundice — liver involvement)\n🚨 No urination or very dark urine (kidney failure)\n🚨 Blood in urine\n🚨 Difficulty breathing\n🚨 Coughing up blood\n\n**Prevention:**\n• Avoid wading in flood water — wear boots\n• Wash body with soap after flood water contact\n• Do NOT eat food that touched flood water\n• Eliminate rats from home surroundings\n• Cover all cuts and wounds with waterproof bandage\n\n⚠️ Leptospirosis is TREATABLE if caught early. See a doctor quickly. Emergency: 108`
+        },
+        ta: {
+          keywords: ["லெப்டோ", "வெள்ள காய்ச்சல்", "எலி காய்ச்சல்", "வெள்ளம்", "மஞ்சள் கண்"],
+          response: `🌧️ **லெப்டோஸ்பைரோசிஸ் (வெள்ள / எலி காய்ச்சல்) — வழிகாட்டல்**\n\n**ஆரம்ப அறிகுறிகள் (வெளிப்பாட்டிற்கு 2-14 நாட்கள் பிறகு):**\n• நடுக்கத்துடன் அதிக காய்ச்சல்\n• கடுமையான தலைவலி மற்றும் தசை வலி (குறிப்பாக கால் பிண்டம்)\n• சிவந்த கண்கள் — இரத்தம் நிறைந்தது போல் தெரியும்\n• குமட்டல், வாந்தி, வயிற்று வலி\n• வெள்ள தண்ணீர் அல்லது சேற்றில் நடந்த பிறகு வரும்\n\n**வீட்டு பராமரிப்பு:**\n• முழு ஓய்வு — மிகவும் முக்கியம்\n• காய்ச்சலுக்கு Paracetamol மட்டும் — Ibuprofen வேண்டாம்\n• நிறைய திரவம் குடிக்கவும்\n• வெள்ள தண்ணீரில் செல்ல வேண்டுமானால் ரப்பர் செருப்பு அணியுங்கள்\n\n**மருத்துவர்கள் பொதுவாக கொடுப்பார்கள்:**\n• Doxycycline (7 நாட்களுக்கு) — antibiotic\n• இரத்த, சிறுநீர் பரிசோதனை\n• கடுமையான நிலையில்: மருத்துவமனையில் IV மருந்து\n\n**உடனே மருத்துவமனை செல்ல:**\n🚨 கண்கள் அல்லது சருமம் மஞ்சளாக மாறினால் (மஞ்சள் காமாலை)\n🚨 சிறுநீர் வரவில்லை அல்லது கருப்பு நிறத்தில் வருகிறது\n🚨 மூச்சு திணறல்\n\n**தடுப்பு:**\n• வெள்ள தண்ணீரில் நடப்பதை தவிர்க்கவும்\n• தண்ணீர் தொடர்பு கொண்டால் சோப்பு போட்டு குளிக்கவும்\n• வீட்டில் எலி இல்லாமல் பார்த்துக்கொள்ளுங்கள்\n\n⚠️ ஆரம்பத்திலேயே பிடிபட்டால் சரிசெய்யலாம். மருத்துவரை உடனே சந்திக்கவும். 108`
+        }
+      },
+      malaria: {
+        en: {
+          keywords: ["malaria", "cyclic fever", "chills", "sweating", "shivering", "fever every day", "fever every 2 days", "cold then hot"],
+          response: `🦟 **MALARIA — Guidance**\n\n**Early Symptoms (Classic Three-Stage Cycle):**\nStage 1 — Cold Stage: Sudden severe chills and shivering (15-60 min)\nStage 2 — Hot Stage: Rapidly rising fever (up to 106°F), severe headache (1-4 hours)\nStage 3 — Sweating Stage: Profuse sweating, temperature falls, patient feels relieved\nThis cycle repeats every 24, 48, or 72 hours depending on malaria type.\n• Nausea, vomiting, muscle pain\n• Fatigue, loss of appetite\n• Enlarged spleen with long-standing malaria\n\n**Home Care Precautions:**\n• Complete bed rest during fever episodes\n• Take Paracetamol for fever — do NOT self-medicate with Chloroquine without prescription\n• Drink lots of fluids during sweating stage to prevent dehydration\n• Apply cool wet cloth during high fever stage\n• Sleep strictly under mosquito net\n• Wear full-sleeve clothing dusk to dawn\n• Immediately do Malaria Rapid Diagnostic Test (RDT) — available free at PHCs\n\n**What Doctors Typically Prescribe:**\n• Chloroquine for P.vivax malaria (less severe type)\n• Artemisinin Combination Therapy (ACT) for P.falciparum (severe type)\n• Primaquine to prevent relapse\n• Blood smear test to confirm malaria type\n• Antipyretics for fever management\n\n**DANGER SIGNS — Go to Hospital IMMEDIATELY:**\n🚨 Unconsciousness or confusion\n🚨 Seizures / fits\n🚨 Severe headache with stiff neck\n🚨 Breathing difficulty\n🚨 Blood in urine (dark or black urine)\n🚨 Jaundice (yellow eyes)\n🚨 Fever not reducing despite medicines\n\n**Prevention:**\n• Sleep under insecticide-treated mosquito nets every night\n• Use mosquito repellents (cream or coil)\n• Drain or destroy mosquito breeding sites near home\n• Spray insecticide in rooms during evening\n• Get free RDT test done if fever persists more than 2 days\n\n⚠️ Never self-diagnose or self-treat malaria. Always confirm with a blood test. Emergency: 108`
+        },
+        ta: {
+          keywords: ["மலேரியா", "நடுக்கம்", "வியர்வை", "சீரான காய்ச்சல்", "ஒரு நாள் விட்டு காய்ச்சல்"],
+          response: `🦟 **மலேரியா — வழிகாட்டல்**\n\n**ஆரம்ப அறிகுறிகள் (மூன்று கட்ட சுழற்சி):**\nகட்டம் 1 — குளிர் நிலை: திடீர் கடுமையான நடுக்கம் (15-60 நிமிடம்)\nகட்டம் 2 — வெப்ப நிலை: வேகமாக உயரும் காய்ச்சல் (106°F வரை), கடுமையான தலைவலி\nகட்டம் 3 — வியர்வை நிலை: அதிகமாக வியர்க்கும், காய்ச்சல் குறையும்\nஇந்த சுழற்சி 24, 48, அல்லது 72 மணி நேரத்திற்கு ஒரு முறை திரும்பும்.\n\n**வீட்டு பராமரிப்பு:**\n• காய்ச்சல் வரும் போது முழு ஓய்வு எடுங்கள்\n• Paracetamol மட்டும் — மருத்துவர் சொல்லாமல் Chloroquine எடுக்காதீர்கள்\n• வியர்வை நிலையில் நிறைய திரவம் குடிக்கவும்\n• கொசு வலையில் கட்டாயம் தூங்குங்கள்\n• PHC-ல் இலவசமாக Malaria RDT பரிசோதனை செய்யுங்கள்\n\n**மருத்துவர்கள் பொதுவாக கொடுப்பார்கள்:**\n• Chloroquine அல்லது ACT மருந்துகள் (மலேரியா வகையை பொறுத்து)\n• இரத்த பரிசோதனை — மலேரியா வகை உறுதிசெய்ய\n• Primaquine — மீண்டும் வராமல் தடுக்க\n\n**உடனே மருத்துவமனை செல்ல:**\n🚨 நினைவிழத்தல் அல்லது குழப்பம்\n🚨 வலிப்பு\n🚨 மூச்சு திணறல்\n🚨 சிறுநீர் கருப்பாக வருகிறது\n\n⚠️ இரத்த பரிசோதனை இல்லாமல் சொந்தமாக சிகிச்சை செய்ய வேண்டாம். அவசரம்: 108`
+        }
+      },
+      chikungunya: {
+        en: {
+          keywords: ["chikungunya", "chikun", "joint pain fever", "severe joint pain", "cannot walk", "swollen joints", "rash with fever"],
+          response: `🦴 **CHIKUNGUNYA — Guidance**\n\n**Early Symptoms:**\n• Sudden high fever (102-104°F) — comes on within hours\n• VERY severe joint pain (the name "Chikungunya" means "bent over in pain")\n• Joints most affected: wrists, knees, ankles, finger joints\n• Joint swelling in some patients\n• Skin rash (red spots) on trunk, arms, legs\n• Headache, muscle pain, fatigue\n• Symptoms last 1-2 weeks but joint pain may continue for months\n\n**Home Care Precautions:**\n• Complete bed rest — joint pain makes movement very painful\n• Take Paracetamol for fever and pain — do NOT take Aspirin or Ibuprofen initially\n• Warm compress on painful joints provides relief\n• Gentle range-of-motion exercises after fever reduces\n• Elevate swollen joints\n• Drink 3+ litres of water, coconut water daily\n• Eat fruits rich in Vitamin C (helps with inflammation)\n\n**What Doctors Typically Prescribe:**\n• Paracetamol (first choice for fever and pain)\n• After 3-4 days when bleeding risk is confirmed low: Ibuprofen or Naproxen for joint pain\n• Chloroquine phosphate in some cases for persistent joint pain\n• Blood test to confirm (CHIKV IgM test)\n• NSAIDs for chronic joint pain if it persists beyond 3 weeks\n\n**DANGER SIGNS — Go to Hospital IMMEDIATELY:**\n🚨 Confusion or change in consciousness\n🚨 Seizures\n🚨 Severe chest or abdominal pain\n🚨 Bleeding tendency\n🚨 Newborns, elderly, or diabetes patients with chikungunya need immediate care\n\n**Prevention:**\n• Destroy mosquito breeding grounds (Aedes mosquito — bites in DAY TIME)\n• Use repellent during daytime hours especially\n• Wear full-sleeve clothes even during day\n• Mosquito nets and coils\n• Community fogging during outbreak\n\n⚠️ Chikungunya is not usually fatal but joint pain can be very debilitating. Always confirm diagnosis with a doctor. Emergency: 108`
+        },
+        ta: {
+          keywords: ["சிக்குன்குன்யா", "மூட்டு வலி", "நடக்க முடியவில்லை", "மூட்டு வீக்கம்", "காய்ச்சல் மூட்டு"],
+          response: `🦴 **சிக்குன்குன்யா — வழிகாட்டல்**\n\n**ஆரம்ப அறிகுறிகள்:**\n• திடீர் அதிக காய்ச்சல் (102-104°F)\n• மிகவும் கடுமையான மூட்டு வலி — நடக்கவே முடியாது\n• மணிக்கட்டு, முழங்கால், கணுக்கால், விரல் மூட்டுகள் பாதிக்கும்\n• சருமத்தில் சிவந்த படை\n• தலைவலி, தசை வலி, களைப்பு\n• 1-2 வாரம் நிலைக்கும், மூட்டு வலி மாதங்களாக இருக்கலாம்\n\n**வீட்டு பராமரிப்பு:**\n• முழு ஓய்வு — மூட்டு வலி நகர்வதை வலிக்கச் செய்யும்\n• Paracetamol — காய்ச்சல் மற்றும் வலிக்கு\n• வலிக்கும் மூட்டில் சூடான ஒத்தடம் கொடுங்கள்\n• தினமும் 3+ லிட்டர் நீர், தேங்காய் தண்ணீர் குடிக்கவும்\n• Vitamin C நிறைந்த பழங்கள் சாப்பிடுங்கள்\n\n**மருத்துவர்கள் பொதுவாக கொடுப்பார்கள்:**\n• Paracetamol (முதல் தேர்வு)\n• சில நாட்கள் பிறகு மூட்டு வலிக்கு Ibuprofen\n• CHIKV IgM இரத்த பரிசோதனை\n• நாள்பட்ட மூட்டு வலிக்கு NSAIDs\n\n**உடனே மருத்துவமனை செல்ல:**\n🚨 குழப்பம் அல்லது நினைவிழத்தல்\n🚨 வலிப்பு\n🚨 கடுமையான மார்பு வலி\n🚨 புதிதாக பிறந்த குழந்தை அல்லது நீரிழிவு நோயாளி\n\n**தடுப்பு:**\n• Aedes கொசு பகல் நேரத்தில் கடிக்கும் — பகலிலும் repellent போடுங்கள்\n• கொசு பெருக்கும் இடங்களை அகற்றுங்கள்\n• முழு கை உடை அணியுங்கள்\n\n⚠️ மருத்துவரிடம் நோயை உறுதி செய்யுங்கள். அவசரம்: 108`
+        }
+      }
+    };
+
+    const HOSPITALS = [
+      { name: "Government General Hospital, Chennai",      type: "Multi-Speciality",  phone: "044-25305000", beds: 2654, district: "Chennai",      lat: 13.0631, lng: 80.2775 },
+      { name: "Rajiv Gandhi Govt General Hospital",        type: "Teaching Hospital", phone: "044-25305000", beds: 2500, district: "Chennai",      lat: 13.0569, lng: 80.2707 },
+      { name: "Coimbatore Medical College Hospital",       type: "Medical College",   phone: "0422-2301945", beds: 1400, district: "Coimbatore",   lat: 11.0012, lng: 76.9682 },
+      { name: "Madurai Government Hospital",               type: "Multi-Speciality",  phone: "0452-2532535", beds: 1800, district: "Madurai",      lat: 9.9285,  lng: 78.1176 },
+      { name: "Salem Government Hospital",                 type: "Multi-Speciality",  phone: "0427-2411061", beds: 1200, district: "Salem",        lat: 11.6575, lng: 78.1523 },
+      { name: "Tirunelveli Medical College Hospital",      type: "Medical College",   phone: "0462-2572244", beds: 1500, district: "Tirunelveli",  lat: 8.7272,  lng: 77.6978 },
+      { name: "Vellore Government Hospital",               type: "Multi-Speciality",  phone: "0416-2281000", beds: 900,  district: "Vellore",      lat: 12.9316, lng: 79.1326 },
+      { name: "Thanjavur Medical College Hospital",        type: "Medical College",   phone: "04362-227777", beds: 950,  district: "Thanjavur",    lat: 10.7870, lng: 79.1378 },
+      { name: "Trichy Government Hospital",                type: "Multi-Speciality",  phone: "0431-2414411", beds: 1500, district: "Trichy",       lat: 10.7905, lng: 78.6869 },
+      { name: "Erode Government Hospital",                 type: "District Hospital", phone: "0424-2265454", beds: 750,  district: "Erode",        lat: 11.3410, lng: 77.7172 }
+    ];
+
+    let currentLang = 'en';
+    let recognition = null;
+    let isListening = false;
+    let isLoading = false;
+
+    // PART 5 — SMART RESPONSE FUNCTION
+    function getSmartResponse(userInput) {
+      const input = userInput.toLowerCase().trim();
+      const lang = currentLang;
+
+      for (const [disease, data] of Object.entries(DISEASE_DATA)) {
+        const keywords = data[lang].keywords;
+        if (keywords.some(keyword => input.includes(keyword))) {
+          return data[lang].response;
+        }
+      }
+
+      const hospitalKeywordsEn = ["hospital", "clinic", "doctor", "where", "nearest", "find"];
+      const hospitalKeywordsTa = ["மருத்துவமனை", "மருத்துவர்", "எங்கே", "அருகில்"];
+      const allHospitalKeywords = [...hospitalKeywordsEn, ...hospitalKeywordsTa];
+      if (allHospitalKeywords.some(k => input.includes(k))) {
+        showHospitals();
+        return null;
+      }
+
+      const feverKeywordsEn = ["fever", "temperature", "hot body", "feeling unwell", "sick"];
+      const feverKeywordsTa = ["காய்ச்சல்", "உடம்பு சூடு", "நோய்வாய்ப்பட்டேன்"];
+      if ([...feverKeywordsEn, ...feverKeywordsTa].some(k => input.includes(k))) {
+        return lang === 'ta'
+          ? `🌡️ **காய்ச்சல் — பொது வழிகாட்டல்**\n\nகாய்ச்சல் பல நோய்களின் அறிகுறியாக இருக்கலாம். உங்கள் காய்ச்சலை சரியாக கண்டறிய, கூடுதல் அறிகுறிகளை சொல்லுங்கள்:\n\n• மூட்டு வலி உள்ளதா? → சிக்குன்குன்யா அல்லது டெங்கு இருக்கலாம்\n• நடுக்கம் மற்றும் வியர்வை உள்ளதா? → மலேரியா இருக்கலாம்\n• வயிற்றுப்போக்கு உள்ளதா? → காலரா இருக்கலாம்\n• வெள்ள தண்ணீரில் நடந்தீர்களா? → லெப்டோஸ்பைரோசிஸ் இருக்கலாம்\n\nகீழே உள்ள நோய் பொத்தான்களை தொட்டு விரிவான தகவல் பெறுங்கள்.\n\n⚠️ 2 நாட்களுக்கு மேல் காய்ச்சல் இருந்தால் மருத்துவரை சந்திக்கவும்.`
+          : `🌡️ **Fever — General Guidance**\n\nFever can be a symptom of many diseases. To help you better, please tell me more symptoms:\n\n• Joint pain with fever? → Could be Chikungunya or Dengue\n• Chills then sweating in cycles? → Could be Malaria\n• Diarrhea with fever? → Could be Cholera\n• Fever after flood/muddy water? → Could be Leptospirosis\n\nTap the disease buttons above for detailed guidance.\n\n⚠️ If fever lasts more than 2 days, please visit a doctor.`;
+      }
+
+      return lang === 'ta'
+        ? `நன்றி உங்கள் கேள்விக்கு! 🙏\n\nநான் இந்த நோய்களில் உதவ முடியும்:\n\n🦟 **டெங்கு** — மூட்டு வலி, சருமத்தில் படை, காய்ச்சல்\n💧 **காலரா** — வயிற்றுப்போக்கு, வாந்தி\n🌧️ **லெப்டோஸ்பைரோசிஸ்** — வெள்ளம் பின் காய்ச்சல்\n\n🦟 **மலேரியா** — சீரான காய்ச்சல் நடுக்கம்\n\n🦴 **சிக்குன்குன்யா** — மூட்டு வலி காய்ச்சல்\n\nஉங்கள் அறிகுறிகளை விவரமாக சொல்லுங்கள் அல்லது கீழே உள்ள பொத்தான்களை தொடுங்கள்.\n\n⚠️ மருத்துவரை கட்டாயம் சந்திக்கவும்.`
+        : `Thank you for your question! 🙏\n\nI can help you with these diseases:\n\n🦟 **Dengue** — rash, fever, joint pain\n💧 **Cholera** — diarrhea, vomiting, dehydration\n🌧️ **Leptospirosis** — fever after floods\n\n🦟 **Malaria** — cyclic fever with chills\n\n🦴 **Chikungunya** — severe joint pain with fever\n\nPlease describe your symptoms in more detail or tap the disease buttons above.\n\n⚠️ Always consult a qualified doctor for diagnosis.`;
+    }
+
+    // PART 6 — ALL JAVASCRIPT FUNCTIONS
+    function setLang(lang) {
+      currentLang = lang;
+      document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+      document.getElementById('btn-ta').classList.toggle('active', lang === 'ta');
+      const placeholders = {
+        en: 'Describe symptoms or ask about dengue, malaria, cholera...',
+        ta: 'உங்கள் அறிகுறிகளை விவரிக்கவும் அல்லது நோய் பற்றி கேளுங்கள்...'
+      };
+      document.getElementById('inputArea').placeholder = placeholders[lang];
+      const voiceLabels = { en: 'Speak Symptoms', ta: 'பேசி சொல்லுங்கள்' };
+      document.getElementById('voiceLabel').textContent = voiceLabels[lang];
+      if (recognition) recognition.lang = lang === 'ta' ? 'ta-IN' : 'en-IN';
+      initDiseaseTags();
+      initQuickButtons();
+    }
+
+    function initVoice() {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) {
+        const btn = document.getElementById('voiceBtn');
+        btn.style.opacity = '0.4';
+        btn.title = 'Voice not supported. Please use Chrome browser.';
+        btn.onclick = () => alert('Voice input requires Chrome browser. Please open this page in Google Chrome.');
+        return;
+      }
+      recognition = new SR();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = 'en-IN';
+
+      recognition.onstart = () => {
+        isListening = true;
+        const btn = document.getElementById('voiceBtn');
+        btn.classList.add('listening');
+        document.getElementById('voiceIcon').textContent = '🎙️';
+        document.getElementById('voiceLabel').textContent = currentLang === 'ta' ? 'கேட்கிறேன்...' : '🎙️ Listening...';
+        document.getElementById('voiceStatus').textContent = currentLang === 'ta' ? 'பேசுங்கள்...' : 'Speak now...';
+      };
+
+      recognition.onresult = (event) => {
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        document.getElementById('inputArea').value = transcript;
+        updateSendBtn();
+      };
+
+      recognition.onend = () => {
+        isListening = false;
+        const btn = document.getElementById('voiceBtn');
+        btn.classList.remove('listening');
+        document.getElementById('voiceIcon').textContent = '🎤';
+        document.getElementById('voiceLabel').textContent = currentLang === 'ta' ? 'பேசி சொல்லுங்கள்' : 'Speak Symptoms';
+        document.getElementById('voiceStatus').textContent = '';
+        const text = document.getElementById('inputArea').value.trim();
+        if (text) {
+          setTimeout(() => sendMessage(), 300);
+        }
+      };
+
+      recognition.onerror = (event) => {
+        isListening = false;
+        document.getElementById('voiceBtn').classList.remove('listening');
+        document.getElementById('voiceIcon').textContent = '🎤';
+        document.getElementById('voiceLabel').textContent = currentLang === 'ta' ? 'பேசி சொல்லுங்கள்' : 'Speak Symptoms';
+        const errorMessages = {
+          'no-speech': currentLang === 'ta' ? 'பேச்சு கேட்கவில்லை. மீண்டும் முயற்சிக்கவும்.' : 'No speech detected. Try again.',
+          'not-allowed': 'Microphone blocked. Allow mic access in browser settings.',
+          'network': 'Network error for voice. Try again.'
+        };
+        document.getElementById('voiceStatus').textContent = errorMessages[event.error] || 'Error: ' + event.error;
+        setTimeout(() => { document.getElementById('voiceStatus').textContent = ''; }, 3000);
+      };
+    }
+
+    function toggleVoice() {
+      if (!recognition) {
+        alert('Voice input requires Chrome browser. Please open in Google Chrome.');
+        return;
+      }
+      if (isListening) {
+        recognition.stop();
+      } else {
+        recognition.lang = currentLang === 'ta' ? 'ta-IN' : 'en-IN';
+        try {
+          recognition.start();
+        } catch(e) {
+          document.getElementById('voiceStatus').textContent = 'Click mic again to retry';
+          setTimeout(() => { document.getElementById('voiceStatus').textContent = ''; }, 2000);
+        }
+      }
+    }
+
+    function updateSendBtn() {
+      const val = document.getElementById('inputArea').value.trim();
+      const btn = document.getElementById('sendBtn');
+      btn.disabled = !val || isLoading;
+      if (!val || isLoading) {
+          btn.classList.remove('enabled');
+      } else {
+          btn.classList.add('enabled');
+      }
+    }
+
+    function renderText(text) {
+      return text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br>');
+    }
+
+    function addMessage(role, content) {
+      const container = document.getElementById('messages');
+      const row = document.createElement('div');
+      row.className = 'msg-row ' + (role === 'assistant' ? 'assistant' : 'user');
+
+      const avatar = document.createElement('div');
+      avatar.className = 'msg-avatar ' + (role === 'assistant' ? 'bot' : 'user');
+      avatar.textContent = role === 'assistant' ? '🏥' : '👤';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'msg-bubble ' + (role === 'assistant' ? 'bot' : 'user');
+      if (currentLang === 'ta') bubble.style.fontFamily = "'Noto Sans Tamil', sans-serif";
+      bubble.innerHTML = renderText(content);
+
+      if (role === 'assistant') {
+        row.appendChild(avatar);
+        row.appendChild(bubble);
+      } else {
+        row.appendChild(bubble);
+        row.appendChild(avatar);
+      }
+
+      container.appendChild(row);
+      scrollToBottom();
+    }
+
+    function showTyping() {
+      const container = document.getElementById('messages');
+      const row = document.createElement('div');
+      row.className = 'msg-row typing-row';
+      row.id = 'typingRow';
+      const avatar = document.createElement('div');
+      avatar.className = 'msg-avatar bot';
+      avatar.textContent = '🏥';
+      const dots = document.createElement('div');
+      dots.className = 'typing-dots';
+      dots.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+      row.appendChild(avatar);
+      row.appendChild(dots);
+      container.appendChild(row);
+      scrollToBottom();
+    }
+
+    function removeTyping() {
+      const el = document.getElementById('typingRow');
+      if (el) el.remove();
+    }
+
+    function scrollToBottom() {
+      setTimeout(() => {
+        const c = document.getElementById('messages');
+        c.scrollTop = c.scrollHeight;
+      }, 60);
+    }
+
+    function showHospitals() {
+      const container = document.getElementById('messages');
+      const intro = currentLang === 'ta'
+        ? '🏥 **அரசு மருத்துவமனைகள் — தமிழ்நாடு**\n\nகீழே உள்ள மருத்துவமனைகளை பாருங்கள். Map பொத்தானை அழுத்தி வழி தெரிந்துகொள்ளுங்கள்.'
+        : '🏥 **Government Hospitals — Tamil Nadu**\n\nTap the Map or Directions button to navigate to your nearest hospital.';
+      addMessage('assistant', intro);
+
+      const row = document.createElement('div');
+      row.className = 'msg-row assistant';
+      const avatar = document.createElement('div');
+      avatar.className = 'msg-avatar bot';
+      avatar.textContent = '🏥';
+
+      const panel = document.createElement('div');
+      panel.style.cssText = 'max-width:78%;background:#0D1F35;border:1px solid #1E3A5F;border-radius:12px;padding:14px;';
+
+      HOSPITALS.forEach(h => {
+        const card = document.createElement('div');
+        card.style.cssText = 'background:#0A1628;border:1px solid #1E3A5F;border-radius:8px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start;';
+        card.innerHTML = `
+          <div style="font-size:20px;flex-shrink:0">🏥</div>
+          <div style="flex:1">
+            <div style="color:#E2E8F0;font-size:12.5px;font-weight:600;">${h.name}</div>
+            <div style="color:#94A3B8;font-size:11px;margin-top:2px;">${h.type} | 📞 ${h.phone}</div>
+            <div style="color:#94A3B8;font-size:11px;">🛏️ ${h.beds} beds | 📍 ${h.district}</div>
+            <a href="https://www.openstreetmap.org/?mlat=${h.lat}&mlon=${h.lng}&zoom=15" target="_blank"
+               style="display:inline-block;margin-top:6px;padding:4px 10px;background:#0D9488;color:white;border-radius:6px;font-size:11px;text-decoration:none;">
+              🗺️ Open Map
+            </a>
+            <a href="https://www.google.com/maps/dir/?api=1&destination=${h.lat},${h.lng}" target="_blank"
+               style="display:inline-block;margin-top:6px;margin-left:5px;padding:4px 10px;background:#1E3A5F;color:white;border-radius:6px;font-size:11px;text-decoration:none;">
+              🧭 Directions
+            </a>
+          </div>`;
+        panel.appendChild(card);
+      });
+      const note = document.createElement('div');
+      note.style.cssText = 'color:#4B7A9A;font-size:10.5px;margin-top:6px;';
+      note.textContent = 'Emergency: 108 (Tamil Nadu Ambulance — Free 24/7)';
+      panel.appendChild(note);
+
+      row.appendChild(avatar);
+      row.appendChild(panel);
+      container.appendChild(row);
+      scrollToBottom();
+    }
+
+    function sendMessage(override) {
+      const text = override || document.getElementById('inputArea').value.trim();
+      if (!text || isLoading) return;
+
+      document.getElementById('inputArea').value = '';
+      isLoading = true;
+      updateSendBtn();
+      addMessage('user', text);
+      showTyping();
+
+      setTimeout(() => {
+        removeTyping();
+        const response = getSmartResponse(text);
+        if (response) {
+          addMessage('assistant', response);
+        }
+        isLoading = false;
+        updateSendBtn();
+      }, 700);
+    }
+
+    function handleKey(event) {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+      }
+    }
+
+    function initDiseaseTags() {
+      const container = document.getElementById('diseaseTags');
+      container.innerHTML = '';
+      const tags = [
+        { key: 'dengue',        en: 'dengue',         ta: 'டெங்கு',      color: '#F97316' },
+        { key: 'cholera',       en: 'cholera',        ta: 'காலரா',        color: '#3B82F6' },
+        { key: 'leptospirosis', en: 'leptospirosis',  ta: 'லெப்டோ',      color: '#8B5CF6' },
+        { key: 'malaria',       en: 'malaria',        ta: 'மலேரியா',      color: '#EF4444' },
+        { key: 'chikungunya',   en: 'chikungunya',    ta: 'சிக்குன்',     color: '#10B981' },
+      ];
+      tags.forEach(tag => {
+        const btn = document.createElement('button');
+        btn.style.cssText = `border:1px solid ${tag.color};color:${tag.color};background:transparent;
+          border-radius:12px;padding:3px 11px;font-size:11px;cursor:pointer;
+          font-family:'DM Sans','Noto Sans Tamil',sans-serif;transition:all 0.2s;`;
+        btn.textContent = currentLang === 'ta' ? tag.ta : tag.en;
+        btn.onmouseover = () => { btn.style.background = tag.color; btn.style.color = '#fff'; };
+        btn.onmouseout = () => { btn.style.background = 'transparent'; btn.style.color = tag.color; };
+        btn.onclick = () => {
+          const q = currentLang === 'ta'
+            ? `${tag.ta} பற்றி அறிகுறிகள் மற்றும் முன்னெச்சரிக்கை சொல்லுங்கள்`
+            : `Tell me about ${tag.en} symptoms precautions and home care`;
+          sendMessage(q);
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function initQuickButtons() {
+      const container = document.getElementById('quickQ');
+      container.innerHTML = '';
+      const buttons = currentLang === 'ta' ? [
+        { label: '🦟 டெங்கு அறிகுறி?',   text: 'டெங்கு ஆரம்ப அறிகுறிகள் என்ன? வீட்டில் என்ன செய்யலாம்?',        action: 'chat' },
+        { label: '💧 வயிற்றுப்போக்கு?',  text: 'திடீர் வயிற்றுப்போக்கும் வாந்தியும் வருகிறது. காலரா-வா?',          action: 'chat' },
+        { label: '🌧️ வெள்ளம் காய்ச்சல்?', text: 'வெள்ளத்திற்கு பிறகு காய்ச்சல் வருகிறது. என்ன நோய்?',             action: 'chat' },
+        { label: '🦟 மலேரியா நடுக்கம்?',  text: 'சீரான காய்ச்சல் நடுக்கம் வியர்வை. மலேரியா-வா?',                  action: 'chat' },
+        { label: '🦴 மூட்டு வலி?',         text: 'அதிக காய்ச்சலும் கடுமையான மூட்டு வலியும். சிக்குன்குன்யா-வா?',   action: 'chat' },
+        { label: '🏥 மருத்துவமனை',         text: '',                                                                  action: 'hospitals' },
+      ] : [
+        { label: '🦟 Dengue symptoms?',   text: 'What are early dengue symptoms and what home care precautions should I take?', action: 'chat' },
+        { label: '💧 Watery diarrhea?',   text: 'Sudden watery diarrhea and vomiting. Could it be cholera? What to do?',        action: 'chat' },
+        { label: '🌧️ Flood fever?',        text: 'Fever and body pain after floods. Could be leptospirosis? Precautions?',       action: 'chat' },
+        { label: '🦟 Malaria chills?',    text: 'Cyclic fever with chills and sweating. Could it be malaria?',                  action: 'chat' },
+        { label: '🦴 Joint pain fever?',  text: 'High fever with severe joint pain. Is this chikungunya? Home care?',           action: 'chat' },
+        { label: '🏥 Find Hospitals',     text: '',                                                                              action: 'hospitals' },
+      ];
+      buttons.forEach(b => {
+        const btn = document.createElement('button');
+        btn.className = 'quick-btn';
+        btn.textContent = b.label;
+        btn.onclick = () => {
+          if (b.action === 'hospitals') showHospitals();
+          else sendMessage(b.text);
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function init() {
+      initDiseaseTags();
+      initQuickButtons();
+      initVoice();
+      updateSendBtn();
+
+      const welcomeEn = `👋 வணக்கம்! Hello! I am **NalamAI Health Assistant**.\n\nI can help you with:\n\n🦟 **Dengue** — symptoms, home care and precautions\n💧 **Cholera** — oral rehydration and treatment\n🌧️ **Leptospirosis** — post-flood fever guidance\n🦟 **Malaria** — fever cycles and prevention\n\n🦴 **Chikungunya** — joint pain relief and care\n🏥 **Hospital Locator** — nearest government hospitals\n\nDescribe your symptoms or tap a quick question below.\n\n⚠️ General guidance only. Always consult a doctor. Emergency: 108`;
+
+      const welcomeTa = `👋 வணக்கம்! நான் **NalamAI ஆரோக்கிய உதவியாளர்**.\n\nநான் உங்களுக்கு இதில் உதவ முடியும்:\n\n🦟 **டெங்கு** — அறிகுறிகள், வீட்டு பராமரிப்பு\n💧 **காலரா** — ORS மற்றும் சிகிச்சை\n🌧️ **லெப்டோஸ்பைரோசிஸ்** — வெள்ளம் பின் காய்ச்சல்\n\n🦟 **மலேரியா** — காய்ச்சல் சுழற்சி\n\n🦴 **சிக்குன்குன்யா** — மூட்டு வலி நிவாரணம்\n🏥 **மருத்துவமனை கண்டுபிடி**\n\nகீழே உள்ள கேள்வி பொத்தான்களை தொடுங்கள்.\n\n⚠️ பொது வழிகாட்டல் மட்டுமே. மருத்துவரை அணுகவும். அவசரம்: 108`;
+
+      addMessage('assistant', currentLang === 'ta' ? welcomeTa : welcomeEn);
+    }
+
+    init();
+</script>
+
+</body>
+</html>

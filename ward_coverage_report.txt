@@ -1,0 +1,5 @@
+--- CHENNAI WARD COVERAGE REPORT ---
+Total wards in boundary: 201
+Analysed (Validated) wards: 201
+Missing data wards: 0
+Data completeness %: 100.00%

@@ -1,0 +1,52 @@
+# Credentials & secrets
+.env
+*.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+.Python
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Large model files
+models/*.h5
+models/*.pkl
+nalamai/models/*.h5
+nalamai/models/*.pkl
+
+# DeepFace weights (downloaded at runtime)
+.deepface/
+
+# Face data (private biometric data)
+backend/face_data/enrolled_faces/*.jpg
+backend/face_data/manual_reference/*.jpg
+backend/face_data/manual_reference/*.jpeg
+backend/face_data/manual_reference/*.png
+
+# Raw data (large files)
+data/raw/
+
+# SQLite DB (recreated at runtime)
+*.db
+
+# Logs
+logs/
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Gemini agent artifacts
+.gemini/
