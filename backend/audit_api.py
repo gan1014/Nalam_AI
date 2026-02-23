@@ -9,7 +9,7 @@ def get_audit_trail():
     """
     Returns the real-time audit trail of alerts and data validation.
     """
-    from nalamai.backend import db
+    from backend import db
     conn = db.get_connection()
     if not conn:
         raise HTTPException(status_code=500, detail="Database connection failed")

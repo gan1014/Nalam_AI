@@ -97,6 +97,16 @@ def init_audit_db():
     try:
         cursor = conn.cursor()
         cursor.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE,
+                email TEXT UNIQUE,
+                password_hash TEXT,
+                role TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS government_audit_logs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT,
@@ -131,6 +141,18 @@ def init_audit_db():
                 FOREIGN KEY (user_id) REFERENCES users(id)
             )
         """)
+        
+        # Insert default admin if no users exist
+        cursor.execute("SELECT COUNT(*) FROM users")
+        if cursor.fetchone()[0] == 0:
+            from backend.auth import hash_password
+            admin_pass = hash_password("admin123")
+            cursor.execute("""
+                INSERT INTO users (username, email, password_hash, role)
+                VALUES (?, ?, ?, ?)
+            """, ("admin", "admin@nalamai.tn.gov.in", admin_pass, "ADMIN"))
+            print("✅ Default admin user created (admin / admin123)")
+        
         conn.commit()
     except Exception as e:
         print(f"❌ Init Audit DB Error: {e}")

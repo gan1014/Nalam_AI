@@ -2,6 +2,7 @@
 from fastapi import FastAPI, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import List
 import joblib
 import pandas as pd
 import uvicorn
@@ -9,10 +10,10 @@ import os
 import sys
 
 # Add parent dir to path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-from nalamai.backend import db
-from nalamai.alerts import email_alert
-from nalamai.backend import face_logic
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from backend import db
+from alerts import email_alert
+from backend import face_logic
 import base64
 
 app = FastAPI(

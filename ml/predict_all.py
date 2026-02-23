@@ -16,8 +16,8 @@ LE_DISEASE_PATH = 'nalamai/models/le_disease.pkl'
 LATEST_PREDICTIONS_PATH = 'nalamai/data/processed/latest_predictions.csv'
 
 # Add parent dir to path for backend import
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-from nalamai.backend import db
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from backend import db
 
 def main():
     print("Running Prediction Engine...")

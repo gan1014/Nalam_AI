@@ -463,7 +463,7 @@ def face_verification_page():
             img_b64 = base64.b64encode(img_bytes).decode()
             
             # Call backend to verify
-            from nalamai.backend import face_logic
+            from backend import face_logic
             # For simplicity in Streamlit, we might call backend directly or via requests
             # Let's use direct backend logic call for stability in this environment
             user = st.session_state.temp_user
