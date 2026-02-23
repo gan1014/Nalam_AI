@@ -10,10 +10,8 @@ if root_dir not in sys.path:
 
 # Import and run the actual app
 try:
-    from frontend.app import main
-    # If the app.py defines a main() function, call it.
-    # Otherwise, Streamlit scripts are often top-level.
-    # Looking at frontend/app.py, it seems to have top-level code or we can just import it.
+    # Streamlit scripts are often top-level.
+    # We simply import it to let it execute.
     import frontend.app
 except Exception as e:
     st.error(f"Failed to launch the application: {e}")
