@@ -1,7 +1,2 @@
 libgl1-mesa-glx
 libglib2.0-0
-binutils
-libproj-dev
-gdal-bin
-libgdal-dev
-libsqlite3-dev
