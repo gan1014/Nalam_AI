@@ -15,11 +15,11 @@ venv/
 env/
 .venv/
 
-# Large model files
-models/*.h5
-models/*.pkl
-nalamai/models/*.h5
-nalamai/models/*.pkl
+# Large model files (Uncommented for cloud deployment readiness)
+# models/*.h5
+# models/*.pkl
+# nalamai/models/*.h5
+# nalamai/models/*.pkl
 
 # DeepFace weights (downloaded at runtime)
 .deepface/
@@ -33,7 +33,7 @@ backend/face_data/manual_reference/*.png
 # Raw data (large files)
 data/raw/
 
-# SQLite DB (recreated at runtime)
+# SQLite DB (Keep ignored, created at cloud runtime if missing)
 *.db
 
 # Logs
