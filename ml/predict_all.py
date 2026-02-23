@@ -8,12 +8,12 @@ import sys
 import traceback
 
 # Paths
-PROCESSED_DATA_PATH = 'nalamai/data/processed/train_scaled.csv'
-MODEL_PATH = 'nalamai/models/xgb_risk.pkl'
-SCALER_PATH = 'nalamai/models/scaler.pkl'
-LE_DISTRICT_PATH = 'nalamai/models/le_district.pkl'
-LE_DISEASE_PATH = 'nalamai/models/le_disease.pkl'
-LATEST_PREDICTIONS_PATH = 'nalamai/data/processed/latest_predictions.csv'
+PROCESSED_DATA_PATH = 'data/processed/train_scaled.csv'
+MODEL_PATH = 'models/xgb_risk.pkl'
+SCALER_PATH = 'models/scaler.pkl'
+LE_DISTRICT_PATH = 'models/le_district.pkl'
+LE_DISEASE_PATH = 'models/le_disease.pkl'
+LATEST_PREDICTIONS_PATH = 'data/processed/latest_predictions.csv'
 
 # Add parent dir to path for backend import
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))

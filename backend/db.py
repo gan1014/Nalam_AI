@@ -3,7 +3,7 @@ import sqlite3
 import pandas as pd
 from datetime import datetime
 
-DB_PATH = "nalamai/data/nalamai_local.db"
+DB_PATH = "data/nalamai_local.db"
 
 def get_connection():
     try:

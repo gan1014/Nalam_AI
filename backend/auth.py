@@ -38,7 +38,7 @@ def generate_captcha_text(length=5):
 
 def get_user_from_db(username: str):
     import sqlite3
-    conn = sqlite3.connect('nalamai/data/nalamai_local.db')
+    conn = sqlite3.connect('data/nalamai_local.db')
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM users WHERE username = ? OR email = ?", (username, username))
