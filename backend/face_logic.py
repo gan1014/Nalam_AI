@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 import json
 import base64
-from deepface import DeepFace
+# from deepface import DeepFace  # Moved to lazy import inside functions
 from cryptography.fernet import Fernet
 from typing import List, Optional
 
@@ -79,6 +79,9 @@ def generate_embedding(image_data: bytes) -> Optional[np.ndarray]:
         nparr = np.frombuffer(image_data, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         
+        # Lazy import to speed up app load and prevent installation issues from blocking startup
+        from deepface import DeepFace
+        
         # DeepFace.represent returns a list of dictionaries (one per face)
         results = DeepFace.represent(img, model_name="Facenet", enforce_detection=True)
         
@@ -115,6 +118,9 @@ def verify_against_file(live_bytes: bytes, user_id: int) -> dict:
         # Load live image
         nparr = np.frombuffer(live_bytes, np.uint8)
         live_img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+        # Lazy import
+        from deepface import DeepFace
 
         # DeepFace Verify with Facenet (already downloaded on this system)
         result = DeepFace.verify(
