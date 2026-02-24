@@ -7,17 +7,11 @@ import sys
 
 # ── Resolve project root & add to path ───────────────────────────────────────
 _HERE       = os.path.dirname(os.path.abspath(__file__))
-_PROJ_ROOT  = os.path.abspath(os.path.join(_HERE, '..', '..'))
-_ENV_PATH   = os.path.join(_HERE, '..', '.env')
+_PROJ_ROOT  = os.path.dirname(_HERE)
+_ENV_PATH   = os.path.join(_PROJ_ROOT, '.env')
 
-if _HERE not in sys.path:
-    sys.path.insert(0, _HERE)
 if _PROJ_ROOT not in sys.path:
     sys.path.insert(0, _PROJ_ROOT)
-# Add parent of 'backend' to path
-_PARENT = os.path.dirname(_HERE)
-if _PARENT not in sys.path:
-    sys.path.insert(0, _PARENT)
 
 from backend import db
 

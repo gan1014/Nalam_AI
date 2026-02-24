@@ -1,8 +1,27 @@
 
 import streamlit as st
+
+# MUST BE THE FIRST STREAMLIT COMMAND
+st.set_page_config(
+    page_title="Nalam AI | நலம் AI",
+    page_icon="🩺",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# Debug marker for cloud logs
+print("🚀 DEBUG: frontend/app.py starting execution")
+
 import streamlit.components.v1 as components
 import pandas as pd
-import geopandas as gpd
+try:
+    import geopandas as gpd
+    HAS_GEOPANDAS = True
+except Exception as e:
+    print(f"⚠️ DEBUG: Geopandas load failed: {e}")
+    gpd = None
+    HAS_GEOPANDAS = False
+
 import numpy as np
 import plotly.graph_objects as go
 import folium
@@ -20,14 +39,12 @@ _PROJ = os.path.abspath(os.path.join(_HERE, '..'))
 if _PROJ not in sys.path:
     sys.path.insert(0, _PROJ)
 
-# Now import local modules (after sys.path is configured)
-import importlib
+# Now import local modules
 from backend import audit_exporter
 from alerts import email_alert
-importlib.reload(email_alert)
 from backend import db
-importlib.reload(db)
 from backend import auth
+
 
 # ── SESSION STATE & CORE CONFIG ──────────────────────────────────────────────
 if 'lang' not in st.session_state:
@@ -237,12 +254,7 @@ def t(key, lang, **kwargs):
     return val
 
 # ── PAGE CONFIG ──────────────────────────────────────────────────────────────
-st.set_page_config(
-    page_title="Nalam AI | நலம் AI · Clinical Surveillance",
-    page_icon="🩺",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+# (MOVED TO TOP OF FILE)
 
 # ── COLOR PALETTE ────────────────────────────────────────────────────────────
 BG     = "#0d1117"
@@ -464,6 +476,7 @@ def logout():
     st.rerun()
 
 def face_verification_page():
+    print("🚀 DEBUG: face_verification_page() started")
     _, col_mid, _ = st.columns([1, 2, 1])
     with col_mid:
         st.markdown(f'<div style="text-align:center; margin-bottom:20px;">{LOGO_SMALL}</div>', unsafe_allow_html=True)
@@ -538,6 +551,7 @@ def face_verification_page():
                             st.rerun()
 
 def login_page():
+    print("🚀 DEBUG: login_page() started")
     # Note: captcha_text already initialized at top
 
     # Centered login form
