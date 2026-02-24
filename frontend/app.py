@@ -13,16 +13,17 @@ import sys
 from datetime import datetime
 import base64
 import uuid
-from backend import audit_exporter
 
-# Add current project dir to sys.path (supports both relative and package imports)
+# Add current project dir to sys.path FIRST (before any local imports)
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _PROJ = os.path.abspath(os.path.join(_HERE, '..'))
 if _PROJ not in sys.path:
     sys.path.insert(0, _PROJ)
 
-from alerts import email_alert
+# Now import local modules (after sys.path is configured)
 import importlib
+from backend import audit_exporter
+from alerts import email_alert
 importlib.reload(email_alert)
 from backend import db
 importlib.reload(db)

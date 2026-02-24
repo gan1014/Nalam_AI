@@ -10,8 +10,8 @@ if root_dir not in sys.path:
 
 # Import and run the actual app
 try:
-    # Streamlit scripts are often top-level.
-    # We simply import it to let it execute.
     import frontend.app
 except Exception as e:
+    import traceback
     st.error(f"Failed to launch the application: {e}")
+    st.code(traceback.format_exc(), language="python")
