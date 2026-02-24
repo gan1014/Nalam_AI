@@ -796,15 +796,20 @@ with st.sidebar:
 
     @st.cache_data(ttl=300)
     def load_data():
+        _data_dir = os.path.join(_PROJ, 'data')
+        train_path = os.path.join(_data_dir, 'processed', 'train_scaled.csv')
+        pred_path  = os.path.join(_data_dir, 'processed', 'latest_predictions.csv')
+        geo_path   = os.path.join(_data_dir, 'maps', 'tn_districts.geojson')
         try:
-            df = pd.read_csv('data/processed/train_scaled.csv')
-            try:    preds = pd.read_csv('data/processed/latest_predictions.csv')
+            df = pd.read_csv(train_path)
+            try:    preds = pd.read_csv(pred_path)
             except: preds = pd.DataFrame()
             try:
-                with open('data/maps/tn_districts.geojson') as f: geojson = json.load(f)
+                with open(geo_path) as f: geojson = json.load(f)
             except: geojson = {}
             return df, preds, geojson
-        except:
+        except Exception as e:
+            st.sidebar.warning(f"⚠️ Data load issue: {e}")
             return pd.DataFrame(), pd.DataFrame(), {}
 
     df, preds, geojson = load_data()
@@ -879,8 +884,8 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 if df.empty:
-    st.error(t("no_data", lang))
-    st.stop()
+    st.warning(t("no_data", lang))
+    st.info("💡 The dashboard will display once data is available. You can still use the tabs below.")
 
 # ══════════════════════════════════════════════════════════════════════════════
 # KPI CARDS
@@ -937,7 +942,7 @@ with tab_ch:
     # Load Chennai Data
     load_error = None
     has_chennai = False
-    path = 'data/processed/standardized/chennai_pilot_intelligence.geojson'
+    path = os.path.join(_PROJ, 'data', 'processed', 'standardized', 'chennai_pilot_intelligence.geojson')
     if not os.path.exists(path):
         load_error = f"Standardized file not found: {path}"
     else:

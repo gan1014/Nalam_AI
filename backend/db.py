@@ -3,7 +3,10 @@ import sqlite3
 import pandas as pd
 from datetime import datetime
 
-DB_PATH = "data/nalamai_local.db"
+import os
+
+_DB_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
+DB_PATH = os.path.join(_DB_DIR, "nalamai_local.db")
 
 def get_connection():
     try:
