@@ -28,7 +28,31 @@ from backend import db
 importlib.reload(db)
 from backend import auth
 
-lang = "en" # Default language for pre-authentication UI
+# ── SESSION STATE & CORE CONFIG ──────────────────────────────────────────────
+if 'lang' not in st.session_state:
+    st.session_state.lang = "en"
+if 'authenticated' not in st.session_state:
+    st.session_state.authenticated = False
+if 'face_verified' not in st.session_state:
+    st.session_state.face_verified = False
+if 'session_id' not in st.session_state:
+    st.session_state.session_id = str(uuid.uuid4())[:8]
+if 'temp_user' not in st.session_state:
+    st.session_state.temp_user = None
+if 'captcha_text' not in st.session_state:
+    from backend import auth
+    st.session_state.captcha_text = auth.generate_captcha_text()
+if 'dispatch_verification_active' not in st.session_state:
+    st.session_state.dispatch_verification_active = False
+if 'dispatch_verification_attempts' not in st.session_state:
+    st.session_state.dispatch_verification_attempts = 0
+if 'dispatch_locked_for_session' not in st.session_state:
+    st.session_state.dispatch_locked_for_session = False
+if 'pending_dispatch_data' not in st.session_state:
+    st.session_state.pending_dispatch_data = None
+
+# Sync local variable for translations
+lang = st.session_state.lang
 
 # ── LOGO LOADER ─────────────────────────────────────────────────────────────────
 def get_logo_b64():
@@ -420,12 +444,7 @@ with st.sidebar:
 # ── AUTHENTICATION SYSTEM ──────────────────────────────────────────────────
 # ══════════════════════════════════════════════════════════════════════════════
 
-# Session Control
-if 'authenticated' not in st.session_state:
-    st.session_state.authenticated = False
-if 'session_id' not in st.session_state:
-    import uuid
-    st.session_state.session_id = str(uuid.uuid4())[:8]
+# Already initialized at top level
 
 def logout():
     db.log_event(
@@ -472,7 +491,7 @@ def face_verification_page():
             if not encrypted_embeddings:
                 st.success(t("face_verify_success", lang))
                 st.session_state.face_verified = True
-                st.session_state.authenticated = True
+                # st.session_state.authenticated = True  # Already set after LDAP/DB login
                 st.session_state.user_info = dict(user)
                 st.session_state.current_role = user['role']
                 st.rerun()
@@ -518,9 +537,7 @@ def face_verification_page():
                             st.rerun()
 
 def login_page():
-    # Initialize captcha if not present
-    if 'captcha_text' not in st.session_state:
-        st.session_state.captcha_text = auth.generate_captcha_text()
+    # Note: captcha_text already initialized at top
 
     # Centered login form
     _, col_mid, _ = st.columns([1, 2, 1])
@@ -533,9 +550,9 @@ def login_page():
         </div>
         """, unsafe_allow_html=True)
         
-        # User credentials (NOT using st.form for tighter state control)
-        username = st.text_input("Username or Email", placeholder="e.g. admin")
-        password = st.text_input("Password", type="password")
+        # User credentials with explicit keys for stability
+        username = st.text_input("Username or Email", placeholder="e.g. admin", key="login_username")
+        password = st.text_input("Password", type="password", key="login_password")
         
         st.markdown(f"""
         <div style="background:#161b22; border:1px solid #21262d; border-radius:8px; padding:15px; text-align:center; margin-top:10px;">
@@ -546,7 +563,7 @@ def login_page():
         </div>
         """, unsafe_allow_html=True)
         
-        captcha_input = st.text_input("Enter the code above", placeholder="Case-insensitive verification")
+        captcha_input = st.text_input("Enter the code above", placeholder="Case-insensitive verification", key="login_captcha")
         
         # Action Buttons
         log_col, ref_col = st.columns([4, 1])
@@ -599,21 +616,7 @@ def login_page():
                     st.session_state.captcha_text = auth.generate_captcha_text()
                     st.rerun()
 
-# Session Control
-if 'authenticated' not in st.session_state:
-    st.session_state.authenticated = False
-if 'face_verified' not in st.session_state:
-    st.session_state.face_verified = False
-if 'temp_user' not in st.session_state:
-    st.session_state.temp_user = None
-if 'dispatch_verification_active' not in st.session_state:
-    st.session_state.dispatch_verification_active = False
-if 'dispatch_verification_attempts' not in st.session_state:
-    st.session_state.dispatch_verification_attempts = 0
-if 'dispatch_locked_for_session' not in st.session_state:
-    st.session_state.dispatch_locked_for_session = False
-if 'pending_dispatch_data' not in st.session_state:
-    st.session_state.pending_dispatch_data = None
+# Redundant session control removed (managed at top level)
 
 if not st.session_state.authenticated:
     if st.session_state.temp_user:
@@ -770,14 +773,21 @@ with st.sidebar:
         logout()
     st.markdown("---")
     st.markdown(f'<p class="sec-hdr">{t("lang_label", lang)}</p>', unsafe_allow_html=True)
+    
+    # Callback to handle language change instantly
+    def on_lang_change():
+        st.session_state.lang = "en" if st.session_state.lang_radio == "English" else "ta"
+
     lang_choice = st.radio(
         "Language",
         options=["English", "தமிழ்"],
         horizontal=True,
         label_visibility="collapsed",
-        key="lang_radio"
+        key="lang_radio",
+        index=0 if st.session_state.lang == "en" else 1,
+        on_change=on_lang_change
     )
-    lang = "en" if lang_choice == "English" else "ta"
+    lang = st.session_state.lang # Ensure local var is updated
     st.markdown("<div style='margin-bottom:6px'></div>", unsafe_allow_html=True)
     st.markdown("---")
 
