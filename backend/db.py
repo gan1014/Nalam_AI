@@ -6,7 +6,19 @@ from datetime import datetime
 import os
 
 _DB_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
-DB_PATH = os.path.join(_DB_DIR, "nalamai_local.db")
+_DB_FILE = os.path.join(_DB_DIR, "nalamai_local.db")
+
+# On Streamlit Cloud, the repo is mounted read-only.
+# If we can't write to the data dir, use /tmp/ instead.
+try:
+    os.makedirs(_DB_DIR, exist_ok=True)
+    _test_file = os.path.join(_DB_DIR, ".write_test")
+    with open(_test_file, "w") as f:
+        f.write("test")
+    os.remove(_test_file)
+    DB_PATH = _DB_FILE
+except (OSError, PermissionError):
+    DB_PATH = "/tmp/nalamai_local.db"
 
 def get_connection():
     try:

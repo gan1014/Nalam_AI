@@ -1,5 +1,12 @@
 
+# ── IMPORTS ──────────────────────────────────────────────────────────────────
 import streamlit as st
+import os
+import sys
+import json
+import base64
+import uuid
+from datetime import datetime
 
 # MUST BE THE FIRST STREAMLIT COMMAND
 st.set_page_config(
@@ -12,38 +19,31 @@ st.set_page_config(
 # Debug marker for cloud logs
 print("🚀 DEBUG: frontend/app.py starting execution")
 
-import streamlit.components.v1 as components
-import pandas as pd
-try:
-    import geopandas as gpd
-    HAS_GEOPANDAS = True
-except Exception as e:
-    print(f"⚠️ DEBUG: Geopandas load failed: {e}")
-    gpd = None
-    HAS_GEOPANDAS = False
-
-import numpy as np
-import plotly.graph_objects as go
-import folium
-from streamlit_folium import st_folium
-import json
-import os
-import sys
-from datetime import datetime
-import base64
-import uuid
-
 # Add current project dir to sys.path FIRST (before any local imports)
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _PROJ = os.path.abspath(os.path.join(_HERE, '..'))
 if _PROJ not in sys.path:
     sys.path.insert(0, _PROJ)
 
+# Robust import for core data libs
+try:
+    import pandas as pd
+    import numpy as np
+    import plotly.graph_objects as go
+    import folium
+    from streamlit_folium import st_folium
+    import geopandas as gpd
+    HAS_LIBS = True
+except Exception as e:
+    print(f"⚠️ DEBUG: Library load warning: {e}")
+    HAS_LIBS = False
+
 # Now import local modules
-from backend import audit_exporter
-from alerts import email_alert
 from backend import db
 from backend import auth
+from backend import audit_exporter
+from alerts import email_alert
+import streamlit.components.v1 as components
 
 
 # ── SESSION STATE & CORE CONFIG ──────────────────────────────────────────────
@@ -811,6 +811,7 @@ with st.sidebar:
 
     @st.cache_data(ttl=300)
     def load_data():
+        import pandas as pd
         _data_dir = os.path.join(_PROJ, 'data')
         train_path = os.path.join(_data_dir, 'processed', 'train_scaled.csv')
         pred_path  = os.path.join(_data_dir, 'processed', 'latest_predictions.csv')
