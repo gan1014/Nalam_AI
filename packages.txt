@@ -1,6 +1,5 @@
 libgl1-mesa-glx
 libglib2.0-0
-libgdal-dev
+gdal-bin
 libgeos-dev
 libproj-dev
-gdal-bin
